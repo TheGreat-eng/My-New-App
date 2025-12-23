@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.aotealApp.dto.AppDTO;
@@ -85,6 +86,51 @@ public class AppService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<AppDTO> getAppsByStatus(VersionStatus versionStatus) {
+
+        return appVersionRepository.findAll().stream()
+                .filter(v -> v.getStatus() == versionStatus)
+                .map(version -> {
+                    AppDTO dto = new AppDTO();
+                    // Lưu ý: ID ở đây là ID của Version (để lát nữa Admin duyệt cái version này)
+                    dto.setId(version.getId());
+
+                    dto.setName(version.getApp().getName());
+                    dto.setDescription(version.getApp().getDescription());
+                    dto.setLatestVersion(version.getVersion());
+                    dto.setUpdatedAt(version.getCreatedAt());
+
+                    // Link tải preview cho Admin test thử trước khi duyệt
+                    dto.setDownloadUrl(storageService.getPresignedUrl(version.getFileUrl()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+    }
+
+    // --- 2. Hàm Duyệt hoặc Từ chối App ---
+    @Transactional // Quan trọng để đảm bảo dữ liệu nhất quán
+    public void approveApp(Long versionId, boolean isApproved) {
+        // Tìm bản ghi version theo ID
+        AppVersion version = appVersionRepository.findById(versionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên bản ứng dụng với ID: " + versionId));
+
+        if (isApproved) {
+            // Nếu Admin bấm Duyệt
+            version.setStatus(VersionStatus.PUBLISHED);
+            version.setPublishedAt(java.time.LocalDateTime.now());
+        } else {
+            // Nếu Admin bấm Từ chối
+            version.setStatus(VersionStatus.REJECTED);
+            // Có thể thêm lý do từ chối vào releaseNote hoặc một field riêng nếu muốn
+            version.setReleaseNote(version.getReleaseNote() + " [Admin đã từ chối]");
+        }
+
+        // Lưu xuống DB
+        appVersionRepository.save(version);
     }
 
 }

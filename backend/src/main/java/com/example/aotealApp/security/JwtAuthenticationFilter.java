@@ -39,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Load thông tin user từ DB
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                System.out.println("DEBUG USER: " + username + " || QUYỀN: " + userDetails.getAuthorities());
 
                 // Nếu hợp lệ, set thông tin cho Security Context
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

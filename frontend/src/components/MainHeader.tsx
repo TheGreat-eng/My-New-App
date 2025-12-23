@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Button, theme } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HomeOutlined, CloudUploadOutlined, LoginOutlined, LogoutOutlined } from '@ant-design/icons';
+import { HomeOutlined, CloudUploadOutlined, LoginOutlined, LogoutOutlined, AuditOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
 
@@ -40,6 +40,10 @@ const MainHeader: React.FC = () => {
                     { label: 'Trang chủ', key: '/', icon: <HomeOutlined />, onClick: () => navigate('/') },
                     // Chỉ hiện menu Upload nếu đã đăng nhập
                     isLoggedIn ? { label: 'Upload App', key: '/upload', icon: <CloudUploadOutlined />, onClick: () => navigate('/upload') } : null,
+
+
+                    isLoggedIn ? { label: 'Admin Duyệt bài', key: '/admin', icon: <AuditOutlined />, onClick: () => navigate('/admin') } : null,
+
                 ]}
             />
 

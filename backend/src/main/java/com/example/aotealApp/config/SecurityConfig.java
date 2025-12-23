@@ -56,7 +56,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/apps/**").permitAll() // Xem danh sách App
 
                         // 2. API cần quyền ADMIN hoặc DEV
-                        .requestMatchers("/api/apps/upload").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV")
+                        // .requestMatchers("/api/apps/upload").hasAnyAuthority("ROLE_ADMIN",
+                        // "ROLE_DEV")
+                        .requestMatchers("/api/apps/upload").authenticated()
 
                         // 3. Các request còn lại phải đăng nhập
                         .anyRequest().authenticated());

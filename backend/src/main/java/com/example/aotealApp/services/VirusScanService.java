@@ -2,7 +2,6 @@ package com.example.aotealApp.services;
 
 import java.io.InputStream;
 
-import xyz.capybara.clamav.commands.scan.result.ScanResult;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +14,7 @@ import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.capybara.clamav.ClamavClient;
+import xyz.capybara.clamav.commands.scan.result.ScanResult;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +48,7 @@ public class VirusScanService {
             // 3. Xử lý kết quả
             if (result instanceof ScanResult.OK) {
                 log.info("File SẠCH. ID: {}", appVersionId);
-                appVersion.setStatus(VersionStatus.PUBLISHED); // Hoặc PENDING_APPROVAL nếu có quy trình duyệt
+                appVersion.setStatus(VersionStatus.PENDING_APPROVAL); // Hoặc PENDING_APPROVAL nếu có quy trình duyệt
             } else if (result instanceof ScanResult.VirusFound) {
                 ScanResult.VirusFound virus = (ScanResult.VirusFound) result;
                 log.warn("PHÁT HIỆN VIRUS!!! ID: {} - Tên virus: {}", appVersionId, virus.getFoundViruses());

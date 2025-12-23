@@ -6,6 +6,7 @@ import { Layout } from 'antd';
 import MainHeader from './components/MainHeader';
 import type { JSX } from 'react';
 import LoginPage from './pages/LoginPage'
+import AdminDashboard from './pages/AdminDashboard';
 
 
 // Component Bảo vệ: Nếu chưa có token thì đá về Login
@@ -38,6 +39,18 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+
+
+
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+
+
+
           </Routes>
         </Layout.Content>
       </Layout>
