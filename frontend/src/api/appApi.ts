@@ -1,4 +1,4 @@
-import type { IAppDTO, IAppVersion } from "../types"
+import type { IAppDetail, IAppDTO, IAppVersion } from "../types"
 import axiosClient from "./axiosClient"
 
 
@@ -15,4 +15,8 @@ export const appApi = {
     getAllApps: () => {
         return axiosClient.get<IAppDTO[]>('/apps');
     },
+
+    getAppDetail: (id: number) => {
+        return axiosClient.get<IAppDetail>(`/apps/${id}`);
+    }
 }

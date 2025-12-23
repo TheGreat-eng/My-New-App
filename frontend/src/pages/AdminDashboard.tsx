@@ -5,7 +5,7 @@ import axiosClient from "../api/axiosClient";
 
 const AdminDashboard = () => {
     const [apps, setApps] = useState([]);
-    const [loading, setLoading] = useState();
+    const [loading, setLoading] = useState(false);
 
 
 

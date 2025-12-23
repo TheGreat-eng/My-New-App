@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.aotealApp.dto.AppDTO;
+import com.example.aotealApp.dto.AppDetailDTO;
 import com.example.aotealApp.entity.App;
 import com.example.aotealApp.entity.AppVersion;
 import com.example.aotealApp.entity.VersionStatus;
@@ -70,21 +71,30 @@ public class AppService {
     }
 
     public List<AppDTO> getAllApps() {
-        return appVersionRepository.findAll().stream()
-                // Logic tạm: Lấy hết các version ra (sau này sẽ filter chỉ lấy bản mới nhất)
-                .map(version -> {
-                    AppDTO dto = new AppDTO();
-                    dto.setId(version.getApp().getId());
-                    dto.setName(version.getApp().getName());
-                    dto.setDescription(version.getApp().getDescription());
-                    dto.setLatestVersion(version.getVersion());
-                    dto.setUpdatedAt(version.getCreatedAt());
+        // ✅ CHỈ LẤY CÁC VERSION ĐÃ PUBLISHED
+        return appVersionRepository.findByStatus(VersionStatus.PUBLISHED).stream()
+                .collect(Collectors.groupingBy(v -> v.getApp().getId()))
+                .values().stream()
+                .map(versions -> {
+                    // Lấy version mới nhất
+                    AppVersion latest = versions.stream()
+                            .max((v1, v2) -> v1.getCreatedAt().compareTo(v2.getCreatedAt()))
+                            .orElse(null);
 
-                    // QUAN TRỌNG: Đổi path "apps/..." thành Link HTTP tải được
-                    dto.setDownloadUrl(storageService.getPresignedUrl(version.getFileUrl()));
+                    if (latest == null)
+                        return null;
+
+                    AppDTO dto = new AppDTO();
+                    dto.setId(latest.getApp().getId());
+                    dto.setName(latest.getApp().getName());
+                    dto.setDescription(latest.getApp().getDescription());
+                    dto.setLatestVersion(latest.getVersion());
+                    dto.setUpdatedAt(latest.getCreatedAt());
+                    dto.setDownloadUrl(storageService.getPresignedUrl(latest.getFileUrl()));
 
                     return dto;
                 })
+                .filter(dto -> dto != null)
                 .collect(Collectors.toList());
     }
 
@@ -131,6 +141,39 @@ public class AppService {
 
         // Lưu xuống DB
         appVersionRepository.save(version);
+    }
+
+    public AppDetailDTO getAppDetail(Long appId) {
+        // 1. Tìm App gốc
+        App app = appRepository.findById(appId)
+                .orElseThrow(() -> new RuntimeException("App not found"));
+
+        // 2. Tìm tất cả version của app này
+        // (Lưu ý: Chỉ lấy version đã PUBLISHED cho user thường xem)
+        List<AppDTO> versionDtos = appVersionRepository.findAll().stream()
+                .filter(v -> v.getApp().getId().equals(appId)) // Lọc theo App ID
+                .filter(v -> v.getStatus() == VersionStatus.PUBLISHED) // Chỉ lấy bản đã duyệt
+                .sorted((v1, v2) -> v2.getId().compareTo(v1.getId())) // Sắp xếp mới nhất lên đầu
+                .map(v -> {
+                    AppDTO dto = new AppDTO();
+                    dto.setId(v.getId());
+                    dto.setLatestVersion(v.getVersion()); // Tận dụng field này để chứa version
+                    dto.setDescription(v.getReleaseNote()); // Tận dụng field desc để chứa Release Note
+                    dto.setUpdatedAt(v.getCreatedAt());
+                    dto.setDownloadUrl(storageService.getPresignedUrl(v.getFileUrl()));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // 3. Map sang DTO trả về
+        AppDetailDTO detail = new AppDetailDTO();
+        detail.setId(app.getId());
+        detail.setName(app.getName());
+        detail.setDescription(app.getDescription());
+        detail.setPackageName(app.getPackageName());
+        detail.setVersions(versionDtos);
+
+        return detail;
     }
 
 }

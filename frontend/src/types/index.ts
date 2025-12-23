@@ -28,3 +28,12 @@ export interface IAppDTO {
     downloadUrl: string;
     updatedAt: string;
 }
+
+
+export interface IAppDetail {
+    id: number;
+    name: string;
+    description: string;
+    packageName: string;
+    versions: IAppDTO[];
+}

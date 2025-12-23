@@ -13,13 +13,17 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
     (config) => {
-        // Lấy token từ LocalStorage
         const token = localStorage.getItem('accessToken');
 
         if (token) {
-            // Kẹp vào header: Authorization: Bearer eyJhbGci...
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // QUAN TRỌNG: Không set Content-Type cho multipart (để browser tự động set với boundary)
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+        }
+
         return config;
     },
     (error) => Promise.reject(error)

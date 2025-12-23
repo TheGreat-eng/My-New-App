@@ -3,6 +3,7 @@ import { Card, Button, Row, Col, Typography, Tag, Spin, Empty } from 'antd';
 import { DownloadOutlined, AndroidOutlined } from '@ant-design/icons';
 import { appApi } from '../api/appApi';
 import { type IAppDTO } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 const { Meta } = Card;
 const { Title } = Typography;
@@ -10,6 +11,7 @@ const { Title } = Typography;
 const HomePage: React.FC = () => {
     const [apps, setApps] = useState<IAppDTO[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchApps();
@@ -48,6 +50,7 @@ const HomePage: React.FC = () => {
                         <Col xs={24} sm={12} md={8} lg={6} key={app.id}>
                             <Card
                                 hoverable
+                                onClick={() => navigate(`/apps/${app.id}`)}
                                 actions={[
                                     <Button
                                         type="primary"

@@ -55,10 +55,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // Login/Register
                         .requestMatchers(HttpMethod.GET, "/api/apps/**").permitAll() // Xem danh sách App
 
-                        // 2. API cần quyền ADMIN hoặc DEV
-                        // .requestMatchers("/api/apps/upload").hasAnyAuthority("ROLE_ADMIN",
-                        // "ROLE_DEV")
-                        .requestMatchers("/api/apps/upload").authenticated()
+                        // SỬA: Cho phép OPTIONS request (preflight)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Upload cần xác thực
+                        .requestMatchers("/api/apps/upload").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV")
+
+                        // .requestMatchers(HttpMethod.POST, "/api/apps/upload").authenticated()
 
                         // 3. Các request còn lại phải đăng nhập
                         .anyRequest().authenticated());
@@ -73,20 +76,21 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 1. Cho phép Frontend truy cập (Thay localhost:5173 bằng port thực tế Frontend
-        // bạn đang chạy)
-        // Nếu muốn mở hết cho tiện test thì dùng "*" (nhưng không khuyến khích khi
-        // production)
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
-
-        // 2. Cho phép các method
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        // 3. Cho phép các header (Quan trọng là Authorization để gửi Token)
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "x-auth-token"));
+        // QUAN TRỌNG: Thêm header cho multipart
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "x-auth-token",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"));
 
-        // 4. Cho phép gửi cookie/credentials (nếu cần)
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight request
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

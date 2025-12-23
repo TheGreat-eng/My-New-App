@@ -23,7 +23,7 @@ public class VirusScanService {
     private final AppVersionRepository appVersionRepository;
     private final MinioClient minioClient;
 
-    private final ClamavClient clamavClient = new ClamavClient("localhost", 3310);
+    private final ClamavClient clamavClient = new ClamavClient("@Value(\"${clamav.host}\")", 3310);
 
     @Async
     public void scanFileAsync(Long appVersionId, String bucketName) {

@@ -7,6 +7,8 @@ import MainHeader from './components/MainHeader';
 import type { JSX } from 'react';
 import LoginPage from './pages/LoginPage'
 import AdminDashboard from './pages/AdminDashboard';
+import AppDetailPage from './pages/AppDetailPage';
+import RegisterPage from './pages/RegisterPage';
 
 
 // Component Bảo vệ: Nếu chưa có token thì đá về Login
@@ -49,6 +51,10 @@ function App() {
               </ProtectedRoute>
             } />
 
+            <Route path="/apps/:id" element={<AppDetailPage />} />
+
+
+            <Route path="/register" element={<RegisterPage />} />
 
 
           </Routes>

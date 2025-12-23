@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.aotealApp.dto.AppDTO;
+import com.example.aotealApp.dto.AppDetailDTO;
 import com.example.aotealApp.entity.AppVersion;
 import com.example.aotealApp.entity.VersionStatus;
 import com.example.aotealApp.services.AppService;
@@ -71,4 +72,11 @@ public class AppController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // Lấy chi tiết App và lịch sử version
+    @GetMapping("/{appId}")
+    public ResponseEntity<AppDetailDTO> getAppDetail(@PathVariable Long appId) {
+        return ResponseEntity.ok(appService.getAppDetail(appId));
+    }
+
 }

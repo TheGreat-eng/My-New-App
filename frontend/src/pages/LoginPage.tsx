@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, message, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 
 const { Title } = Typography;
@@ -65,6 +65,9 @@ const LoginPage: React.FC = () => {
                         <Button type="primary" htmlType="submit" block loading={loading}>
                             Đăng nhập
                         </Button>
+                        <div style={{ marginTop: 10, textAlign: 'center' }}>
+                            <Link to="/register">Đăng ký tài khoản mới</Link>
+                        </div>
                     </Form.Item>
                 </Form>
             </Card>

@@ -5,9 +5,9 @@ spring:
   application:
     name: enterprise-app-store
   datasource:
-    url: jdbc:postgresql://localhost:5432/appstore_db
-    username: admin
-    password: password123
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/appstore_db
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:password123}
   jpa:
     hibernate:
       ddl-auto: validate  # Enterprise không dùng update/create, dùng Flyway quản lý
@@ -28,8 +28,11 @@ spring:
       max-request-size: 2GB
 
 # Cấu hình MinIO (Sẽ dùng sau)
-minio:
-  url: http://localhost:9000
-  access-key: minioadmin
-  secret-key: miniopassword
-  bucket: app-installers
+  minio:
+    url: http://${MINIO_HOST:localhost}:9000
+    access-key: minioadmin
+    secret-key: miniopassword
+    bucket: app-installers
+  clamav:
+    host: ${CLAMAV_HOST:localhost}
+    port: 3310

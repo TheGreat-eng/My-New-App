@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Database PostgreSQL
+  # 1. Database
   postgres:
     image: postgres:16-alpine
     container_name: eas_postgres
@@ -9,12 +9,12 @@ services:
       POSTGRES_DB: appstore_db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password123
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
-  # 2. MinIO (Giả lập S3 để lưu file bộ cài)
+  # 2. MinIO
   minio:
     image: minio/minio
     container_name: eas_minio
@@ -23,22 +23,64 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: miniopassword
     ports:
-      - "9000:9000" # API Port
-      - "9001:9001" # Console Port (Giao diện web)
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
-      
-  # 3. ClamAV (Trình diệt virus)
+    networks:
+      - app-network
+
+  # 3. ClamAV
   clamav:
     image: clamav/clamav:latest
     container_name: eas_clamav
-    ports:
-      - "3310:3310" # Cổng giao tiếp TCP
     environment:
-      # Tắt update database lúc khởi động cho nhẹ (khi demo)
-      # Thực tế nên để true để nó tải mẫu virus mới nhất
       CLAMAV_NO_FRESHCLAM: "false"
+    networks:
+      - app-network
+
+  # 4. BACKEND (Spring Boot)
+  backend:
+    build: ./backend
+    container_name: eas_backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Cấu hình DB
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/appstore_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=password123
+      
+      # Cấu hình MinIO (Viết hoa, thay dấu chấm bằng gạch dưới)
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=miniopassword
+      - MINIO_BUCKET=app-installers
+      
+      # Cấu hình ClamAV
+      - CLAMAV_HOST=clamav
+    depends_on:
+      - postgres
+      - minio
+      - clamav
+    networks:
+      - app-network
+
+  # 5. FRONTEND (React)
+  frontend:
+    build: ./frontend
+    container_name: eas_frontend
+    ports:
+      - "3000:80" # Map cổng 80 của Nginx ra cổng 3000 của máy thật
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
   minio_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -10,5 +10,9 @@ interface LoginResponse {
 export const authApi = {
     login: (data: any) => {
         return axiosClient.post<LoginResponse>('auth/login', data)
-    }
+    },
+
+    register: (data: any) => {
+        return axiosClient.post('/auth/signup', data);
+    },
 }
