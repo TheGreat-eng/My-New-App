@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # 1. Database PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: eas_postgres
+    environment:
+      POSTGRES_DB: appstore_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. MinIO (Giả lập S3 để lưu file bộ cài)
+  minio:
+    image: minio/minio
+    container_name: eas_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: miniopassword
+    ports:
+      - "9000:9000" # API Port
+      - "9001:9001" # Console Port (Giao diện web)
+    volumes:
+      - minio_data:/data
+      
+  # 3. ClamAV (Trình diệt virus)
+  clamav:
+    image: clamav/clamav:latest
+    container_name: eas_clamav
+    ports:
+      - "3310:3310" # Cổng giao tiếp TCP
+    environment:
+      # Tắt update database lúc khởi động cho nhẹ (khi demo)
+      # Thực tế nên để true để nó tải mẫu virus mới nhất
+      CLAMAV_NO_FRESHCLAM: "false"
+
+volumes:
+  postgres_data:
+  minio_data:

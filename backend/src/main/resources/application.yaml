@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: enterprise-app-store
+  datasource:
+    url: jdbc:postgresql://localhost:5432/appstore_db
+    username: admin
+    password: password123
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Enterprise không dùng update/create, dùng Flyway quản lý
+    properties:
+      hibernate:
+        # Cấu hình đặt tên: fullName (Java) -> full_name (SQL)
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    show-sql: true
+  
+  flyway:
+    enabled: true
+    baseline-on-migrate: true # Tự động tạo bảng history nếu chưa có
+  
+  # Cấu hình Upload file
+  servlet:
+    multipart:
+      max-file-size: 2GB # Cho phép upload file to
+      max-request-size: 2GB
+
+# Cấu hình MinIO (Sẽ dùng sau)
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: miniopassword
+  bucket: app-installers
