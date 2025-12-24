@@ -23,10 +23,21 @@ const MainHeader: React.FC = () => {
         setIsLoggedIn(authenticated);
     }, [auth.isAuthenticated]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('accessToken');
-        setIsLoggedIn(false);
-        auth.signoutRedirect();
+    const handleLogout = async () => {
+        try {
+            // ✅ Xóa token trước
+            localStorage.removeItem('accessToken');
+            setIsLoggedIn(false);
+            
+            // ✅ Logout từ Keycloak và redirect về trang login
+            await auth.signoutRedirect({
+                post_logout_redirect_uri: 'http://localhost:3000/login'
+            });
+        } catch (error) {
+            console.error('Lỗi khi đăng xuất:', error);
+            // ✅ Nếu có lỗi thì vẫn redirect về login
+            window.location.href = '/login';
+        }
     };
 
     // ✅ Tạo menu items bên ngoài JSX để tránh re-create mỗi lần render

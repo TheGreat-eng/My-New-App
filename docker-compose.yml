@@ -76,6 +76,7 @@ services:
       elasticsearch:
         condition: service_healthy # Chỉ chạy khi Elastic đã Healthy
       # --------------------
+      
     networks:
       - app-network
 
@@ -123,6 +124,7 @@ services:
       - "8081:8080" # Map ra cổng 8081 để không đụng backend 8080
     networks:
       - app-network
+    
 
 volumes:
   postgres_data:

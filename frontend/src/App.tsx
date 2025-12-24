@@ -14,10 +14,13 @@ import { useAuth } from 'react-oidc-context';
 
 // Component Bảo vệ: Nếu chưa có token thì đá về Login
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
+  const auth = useAuth();
+
+  // ✅ Check cả auth.isAuthenticated
+  if (!auth.isAuthenticated && !localStorage.getItem('accessToken')) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 
