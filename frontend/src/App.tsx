@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import AdminDashboard from './pages/AdminDashboard';
 import AppDetailPage from './pages/AppDetailPage';
 import RegisterPage from './pages/RegisterPage';
+import { useAuth } from 'react-oidc-context';
 
 
 // Component Bảo vệ: Nếu chưa có token thì đá về Login
@@ -22,6 +23,21 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 
 function App() {
+
+
+
+  const auth = useAuth();
+
+  // Thêm đoạn này để hiện Loading khi đang xử lý Code từ Keycloak
+  if (auth.isLoading) {
+    return <div style={{ textAlign: 'center', marginTop: 50 }}>Đang xử lý đăng nhập...</div>;
+  }
+
+  // Nếu bị lỗi
+  if (auth.error) {
+    return <div>Lỗi đăng nhập: {auth.error.message}</div>;
+  }
+
   return (
     <Router>
       <Layout style={{ minHeight: '100vh' }}>

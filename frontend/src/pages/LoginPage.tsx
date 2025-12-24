@@ -1,75 +1,48 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Card, message, Typography } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
-import { authApi } from '../api/authApi';
+import React, { useEffect } from 'react';
+import { Button, Card, Typography } from 'antd';
+import { LoginOutlined } from '@ant-design/icons';
+import { useAuth } from 'react-oidc-context'; // Hook lấy thông tin Auth
+import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 
 const LoginPage: React.FC = () => {
-    const [loading, setLoading] = useState(false);
+    const auth = useAuth();
     const navigate = useNavigate();
 
-    const onFinish = async (values: any) => {
-        setLoading(true);
-        try {
-            // 1. Gọi API Login
-            const res = await authApi.login(values);
-
-            // 2. Lưu token vào LocalStorage
-            localStorage.setItem('accessToken', res.data.accessToken);
-
-            message.success('Đăng nhập thành công!');
-
-            // 3. Chuyển hướng về trang chủ (hoặc trang Upload)
+    // Nếu đã đăng nhập rồi thì đá về trang chủ
+    useEffect(() => {
+        // Ưu tiên check auth của thư viện trước
+        if (auth.isAuthenticated) {
+            localStorage.setItem('accessToken', auth.user?.access_token || '');
             navigate('/');
-            // Refresh nhẹ một cái để cập nhật state header (nếu có)
-            window.location.reload();
-
-        } catch (error) {
-            message.error('Sai tài khoản hoặc mật khẩu!');
-        } finally {
-            setLoading(false);
         }
-    };
+        // Fallback: Nếu thư viện chưa kịp cập nhật nhưng LocalStorage đã có hàng
+        // (Cẩn thận đoạn này: authToken trong ảnh của bạn tên là gì? access_token hay authToken?)
+        // Trong ảnh bạn gửi mình thấy key là 'access_token'.
+        else if (localStorage.getItem('access_token')) {
+            navigate('/');
+        }
+    }, [auth.isAuthenticated, navigate]);
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5' }}>
-            <Card style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <div style={{ textAlign: 'center', marginBottom: 30 }}>
-                    <Title level={3}>Enterprise App Store</Title>
-                    <p>Đăng nhập hệ thống nội bộ</p>
+            <Card style={{ width: 400, textAlign: 'center' }}>
+                <Title level={3}>Enterprise App Store</Title>
+                <p>Hệ thống đăng nhập tập trung (SSO)</p>
+
+                <div style={{ marginTop: 30 }}>
+                    {/* Bấm nút này sẽ chuyển sang Keycloak */}
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<LoginOutlined />}
+                        onClick={() => auth.signinRedirect()}
+                        block
+                    >
+                        Đăng nhập bằng Keycloak
+                    </Button>
                 </div>
-
-                <Form
-                    name="login"
-                    initialValues={{ remember: true }}
-                    onFinish={onFinish}
-                    size="large"
-                >
-                    <Form.Item
-                        name="username"
-                        rules={[{ required: true, message: 'Vui lòng nhập Username!' }]}
-                    >
-                        <Input prefix={<UserOutlined />} placeholder="Username (admin_sys)" />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="password"
-                        rules={[{ required: true, message: 'Vui lòng nhập Password!' }]}
-                    >
-                        <Input.Password prefix={<LockOutlined />} placeholder="Password" />
-                    </Form.Item>
-
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" block loading={loading}>
-                            Đăng nhập
-                        </Button>
-                        <div style={{ marginTop: 10, textAlign: 'center' }}>
-                            <Link to="/register">Đăng ký tài khoản mới</Link>
-                        </div>
-                    </Form.Item>
-                </Form>
             </Card>
         </div>
     );

@@ -20,6 +20,16 @@ spring:
         physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         format_sql: true
     show-sql: true
+    
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Đường dẫn để Backend kiểm tra chữ ký Token (Issuer URI)
+          # Lưu ý: Backend chạy trong Docker nên phải gọi keycloak:8080
+          issuer-uri: http://keycloak:8080/realms/enterprise-realm
+          # Link để lấy Public Key (JWK Set)
+          jwk-set-uri: http://keycloak:8080/realms/enterprise-realm/protocol/openid-connect/certs
 
   flyway:
     enabled: true

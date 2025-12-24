@@ -4,6 +4,7 @@ import { DownloadOutlined, AndroidOutlined } from '@ant-design/icons';
 import { appApi } from '../api/appApi';
 import { type IAppDTO } from '../types';
 import { useNavigate } from 'react-router-dom';
+import Search from 'antd/es/input/Search';
 
 const { Meta } = Card;
 const { Title } = Typography;
@@ -33,8 +34,41 @@ const HomePage: React.FC = () => {
         window.open(url, '_blank');
     };
 
+
+    const onSearch = async (value: string) => {
+        setLoading(true);
+        try {
+            let res;
+
+            if (!value.trim()) {
+                res = await appApi.getAllApps();
+            } else {
+                res = await appApi.searchApps(value);
+            }
+            setApps(res.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
+
+
+
+
         <div style={{ padding: '30px', maxWidth: 1200, margin: '0 auto' }}>
+
+            <div style={{ marginBottom: 20 }}>
+                <Search
+                    placeholder="Tìm kiếm ứng dụng (Tên, mô tả...)"
+                    allowClear
+                    enterButton="Tìm kiếm"
+                    size="large"
+                    onSearch={onSearch} // Bấm Enter hoặc nút Tìm
+                />
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <Title level={2}>Kho Ứng dụng</Title>
                 <Button href="/upload" type="dashed">Đăng tải App mới</Button>

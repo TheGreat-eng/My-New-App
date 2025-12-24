@@ -18,5 +18,9 @@ export const appApi = {
 
     getAppDetail: (id: number) => {
         return axiosClient.get<IAppDetail>(`/apps/${id}`);
+    },
+
+    searchApps: (query: string) => {
+        return axiosClient.get<IAppDTO[]>(`/apps/search?query=${query}`);
     }
 }

@@ -111,6 +111,19 @@ services:
       timeout: 10s
       retries: 5
 
+  # 9. Keycloak (Identity Server)
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: eas_keycloak
+    command: start-dev # Chạy chế độ Dev cho nhanh
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8081:8080" # Map ra cổng 8081 để không đụng backend 8080
+    networks:
+      - app-network
+
 volumes:
   postgres_data:
   minio_data:

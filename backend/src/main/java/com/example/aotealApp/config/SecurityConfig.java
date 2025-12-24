@@ -45,29 +45,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Tắt CSRF vì dùng JWT
+                .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không
-                                                                                                              // dùng
-                                                                                                              // Session
                 .authorizeHttpRequests(auth -> auth
-                        // 1. API Public (Ai cũng vào được)
-                        .requestMatchers("/api/auth/**").permitAll() // Login/Register
-                        .requestMatchers(HttpMethod.GET, "/api/apps/**").permitAll() // Xem danh sách App
-
-                        // SỬA: Cho phép OPTIONS request (preflight)
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Upload cần xác thực
-                        .requestMatchers("/api/apps/upload").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV")
-
-                        // .requestMatchers(HttpMethod.POST, "/api/apps/upload").authenticated()
-
-                        // 3. Các request còn lại phải đăng nhập
-                        .anyRequest().authenticated());
-
-        // Thêm filter JWT vào trước filter mặc định
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .requestMatchers("/api/public/**", "/api/auth/**").permitAll()
+                        // Các API khác yêu cầu đăng nhập
+                        .anyRequest().authenticated())
+                // Kích hoạt OAuth2 Resource Server (JWT)
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();
     }

@@ -2,25 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Button } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { HomeOutlined, CloudUploadOutlined, LoginOutlined, LogoutOutlined, AuditOutlined } from '@ant-design/icons';
+import { useAuth } from 'react-oidc-context';
 
 const { Header } = Layout;
 
 const MainHeader: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const auth = useAuth(); // ✅ Di chuyển vào trong component
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        // Kiểm tra đơn giản: Có token trong storage = Đã đăng nhập
+        // ✅ Kiểm tra cả auth.isAuthenticated và localStorage
         const token = localStorage.getItem('accessToken');
-        setIsLoggedIn(!!token);
-    }, []);
+        const authenticated = auth.isAuthenticated || !!token;
+
+        // ✅ Chỉ update khi giá trị thay đổi
+        if (isLoggedIn !== authenticated) {
+            setIsLoggedIn(authenticated);
+        }
+    }, [auth.isAuthenticated]); // ✅ Thêm dependency
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
-        setIsLoggedIn(false);
-        navigate('/login');
-        message.info('Đã đăng xuất');
+        setIsLoggedIn(false); // ✅ Update state ngay lập tức
+        auth.signoutRedirect();
     };
 
     return (
@@ -38,13 +44,9 @@ const MainHeader: React.FC = () => {
                 style={{ flex: 1, borderBottom: 'none' }}
                 items={[
                     { label: 'Trang chủ', key: '/', icon: <HomeOutlined />, onClick: () => navigate('/') },
-                    // Chỉ hiện menu Upload nếu đã đăng nhập
                     isLoggedIn ? { label: 'Upload App', key: '/upload', icon: <CloudUploadOutlined />, onClick: () => navigate('/upload') } : null,
-
-
                     isLoggedIn ? { label: 'Admin Duyệt bài', key: '/admin', icon: <AuditOutlined />, onClick: () => navigate('/admin') } : null,
-
-                ]}
+                ].filter(Boolean)} // ✅ Lọc null values
             />
 
             <div>
@@ -61,7 +63,5 @@ const MainHeader: React.FC = () => {
         </Header>
     );
 };
-// Cần import message từ antd để dùng ở handleLogout (bạn tự thêm import nhé)
-import { message } from 'antd';
 
 export default MainHeader;
