@@ -9,30 +9,67 @@ const { Header } = Layout;
 const MainHeader: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const auth = useAuth(); // ✅ Di chuyển vào trong component
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const auth = useAuth();
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        // ✅ Khởi tạo state từ localStorage ngay từ đầu
+        return !!localStorage.getItem('accessToken') || auth.isAuthenticated;
+    });
 
     useEffect(() => {
-        // ✅ Kiểm tra cả auth.isAuthenticated và localStorage
+        // ✅ Đồng bộ state khi auth thay đổi
         const token = localStorage.getItem('accessToken');
         const authenticated = auth.isAuthenticated || !!token;
-
-        // ✅ Chỉ update khi giá trị thay đổi
-        if (isLoggedIn !== authenticated) {
-            setIsLoggedIn(authenticated);
-        }
-    }, [auth.isAuthenticated]); // ✅ Thêm dependency
+        
+        setIsLoggedIn(authenticated);
+    }, [auth.isAuthenticated]);
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
-        setIsLoggedIn(false); // ✅ Update state ngay lập tức
+        setIsLoggedIn(false);
         auth.signoutRedirect();
     };
 
+    // ✅ Tạo menu items bên ngoài JSX để tránh re-create mỗi lần render
+    const menuItems = React.useMemo(() => [
+        { 
+            label: 'Trang chủ', 
+            key: '/', 
+            icon: <HomeOutlined />, 
+            onClick: () => navigate('/') 
+        },
+        ...(isLoggedIn ? [
+            { 
+                label: 'Upload App', 
+                key: '/upload', 
+                icon: <CloudUploadOutlined />, 
+                onClick: () => navigate('/upload') 
+            },
+            { 
+                label: 'Admin Duyệt bài', 
+                key: '/admin', 
+                icon: <AuditOutlined />, 
+                onClick: () => navigate('/admin') 
+            }
+        ] : [])
+    ], [isLoggedIn, navigate]);
+
     return (
-        <Header style={{ display: 'flex', alignItems: 'center', background: '#fff', boxShadow: '0 2px 8px #f0f1f2' }}>
+        <Header style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            background: '#fff', 
+            boxShadow: '0 2px 8px #f0f1f2',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1
+        }}>
             <div
-                style={{ fontWeight: 'bold', fontSize: 18, marginRight: 40, cursor: 'pointer' }}
+                style={{ 
+                    fontWeight: 'bold', 
+                    fontSize: 18, 
+                    marginRight: 40, 
+                    cursor: 'pointer' 
+                }}
                 onClick={() => navigate('/')}
             >
                 🏢 Enterprise Store
@@ -42,20 +79,25 @@ const MainHeader: React.FC = () => {
                 mode="horizontal"
                 selectedKeys={[location.pathname]}
                 style={{ flex: 1, borderBottom: 'none' }}
-                items={[
-                    { label: 'Trang chủ', key: '/', icon: <HomeOutlined />, onClick: () => navigate('/') },
-                    isLoggedIn ? { label: 'Upload App', key: '/upload', icon: <CloudUploadOutlined />, onClick: () => navigate('/upload') } : null,
-                    isLoggedIn ? { label: 'Admin Duyệt bài', key: '/admin', icon: <AuditOutlined />, onClick: () => navigate('/admin') } : null,
-                ].filter(Boolean)} // ✅ Lọc null values
+                items={menuItems}
             />
 
             <div>
                 {isLoggedIn ? (
-                    <Button type="text" danger icon={<LogoutOutlined />} onClick={handleLogout}>
+                    <Button 
+                        type="text" 
+                        danger 
+                        icon={<LogoutOutlined />} 
+                        onClick={handleLogout}
+                    >
                         Đăng xuất
                     </Button>
                 ) : (
-                    <Button type="primary" icon={<LoginOutlined />} onClick={() => navigate('/login')}>
+                    <Button 
+                        type="primary" 
+                        icon={<LoginOutlined />} 
+                        onClick={() => navigate('/login')}
+                    >
                         Đăng nhập
                     </Button>
                 )}
