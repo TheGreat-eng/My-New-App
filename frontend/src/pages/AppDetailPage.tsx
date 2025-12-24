@@ -4,6 +4,7 @@ import { Card, List, Button, Typography, Tag, Spin, Empty } from 'antd';
 import { DownloadOutlined, ArrowLeftOutlined, HistoryOutlined } from '@ant-design/icons';
 import { appApi } from '../api/appApi';
 import { type IAppDetail } from '../types';
+import { QRCodeSVG } from 'qrcode.react';
 
 const { Title, Paragraph } = Typography;
 
@@ -56,6 +57,17 @@ const AppDetailPage: React.FC = () => {
                     dataSource={app.versions}
                     renderItem={(ver) => (
                         <List.Item
+                            extra={
+                                <div style={{ textAlign: 'center' }}>
+                                    {/* QR Code trỏ tới API Install của Backend */}
+                                    <QRCodeSVG
+                                        //value={`http://172.20.10.2:8080/api/install/${ver.id}`}
+                                        value={`https://eye-partial-mattress-marijuana.trycloudflare.com/api/install/${ver.id}`}
+                                        size={100}
+                                    />
+                                    <div style={{ fontSize: 10, marginTop: 5 }}>Quét để cài</div>
+                                </div>
+                            }
                             actions={[
                                 <Button
                                     type="primary"

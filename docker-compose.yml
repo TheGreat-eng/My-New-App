@@ -59,10 +59,23 @@ services:
       
       # Cấu hình ClamAV
       - CLAMAV_HOST=clamav
+
+      - ELASTIC_HOST=elasticsearch
+
+
+      - APP_BASE_URL=https://upc-performer-physicians-juan.trycloudflare.com
+
     depends_on:
-      - postgres
-      - minio
-      - clamav
+      postgres:
+        condition: service_started
+      minio:
+        condition: service_started
+      clamav:
+        condition: service_started
+      # --- SỬA DÒNG NÀY ---
+      elasticsearch:
+        condition: service_healthy # Chỉ chạy khi Elastic đã Healthy
+      # --------------------
     networks:
       - app-network
 
@@ -77,10 +90,31 @@ services:
     networks:
       - app-network
 
+
+  # 6. Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.0
+    container_name: eas_elastic
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
 volumes:
   postgres_data:
   minio_data:
-
+  elastic_data:
 networks:
   app-network:
     driver: bridge

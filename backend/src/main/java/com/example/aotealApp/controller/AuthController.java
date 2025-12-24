@@ -1,5 +1,7 @@
 package com.example.aotealApp.controller;
 
+import java.util.Collections;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.aotealApp.dto.JwtAuthenticationResponse;
 import com.example.aotealApp.dto.LoginRequest;
 import com.example.aotealApp.dto.SignUpRequest;
+import com.example.aotealApp.entity.Role;
+import com.example.aotealApp.entity.User;
 import com.example.aotealApp.repository.RoleRepository;
 import com.example.aotealApp.repository.UserRepository;
 import com.example.aotealApp.security.JwtTokenProvider;

@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.aotealApp.document.AppDocument;
 import com.example.aotealApp.dto.AppDTO;
 import com.example.aotealApp.dto.AppDetailDTO;
 import com.example.aotealApp.entity.App;
 import com.example.aotealApp.entity.AppVersion;
 import com.example.aotealApp.entity.VersionStatus;
 import com.example.aotealApp.repository.AppRepository;
+import com.example.aotealApp.repository.AppSearchRepository;
 import com.example.aotealApp.repository.AppVersionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class AppService {
     private final AppVersionRepository appVersionRepository;
     private final MinioStorageService storageService;
     private final VirusScanService virusScanService;
+    private final AppSearchRepository appSearchRepository;
 
     @Value("${minio.bucket}")
     private String bucketName;
@@ -141,6 +144,18 @@ public class AppService {
 
         // Lưu xuống DB
         appVersionRepository.save(version);
+
+        if (isApproved) {
+            App app = version.getApp();
+            AppDocument doc = new AppDocument();
+            doc.setId(app.getId());
+            doc.setName(app.getName());
+            doc.setDescription(app.getDescription());
+            doc.setPackageName(app.getPackageName());
+            doc.setStatus("PUBLISHED");
+
+            appSearchRepository.save(doc); // Lưu sang Elastic
+        }
     }
 
     public AppDetailDTO getAppDetail(Long appId) {

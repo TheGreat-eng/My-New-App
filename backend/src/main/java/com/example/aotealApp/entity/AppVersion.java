@@ -2,6 +2,9 @@ package com.example.aotealApp.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,7 +31,7 @@ public class AppVersion {
     private String version; // 1.0.0
 
     private String fileUrl; // Đường dẫn file trên MinIO (quan trọng)
-    
+
     private Long fileSize; // Dung lượng (byte)
 
     @Enumerated(EnumType.STRING)
@@ -36,7 +39,8 @@ public class AppVersion {
 
     private String releaseNote; // Có gì mới?
 
+    @CreationTimestamp // <--- Thêm cái này
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime publishedAt;
 }
-

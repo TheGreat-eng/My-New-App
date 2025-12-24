@@ -2,6 +2,7 @@ package com.example.aotealApp.services;
 
 import java.io.InputStream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +24,18 @@ public class VirusScanService {
     private final AppVersionRepository appVersionRepository;
     private final MinioClient minioClient;
 
-    private final ClamavClient clamavClient = new ClamavClient("@Value(\"${clamav.host}\")", 3310);
+    // private final ClamavClient clamavClient = new
+    // ClamavClient("@Value(\"${clamav.host}\")", 3310);
+
+    @Value("${clamav.host}")
+    private String clamavHost;
 
     @Async
     public void scanFileAsync(Long appVersionId, String bucketName) {
         log.info("Bắt đầu quét virus cho AppVersion ID: {}", appVersionId);
+
+        // 3. Khởi tạo Client động dựa trên host lấy từ config
+        ClamavClient clamavClient = new ClamavClient(clamavHost, 3310);
 
         AppVersion appVersion = appVersionRepository.findById(appVersionId).orElse(null);
 
